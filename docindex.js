@@ -15,6 +15,7 @@
 * docs and groups (JSON decorating with JS comments for doc and tutoring purposes, do not have these in your docindex.json):
 *
 *      {
+*        "title": "Crafts, Sports and Historical Gallery",
 *        "groups": {
 *          "crafts": "Crafts and Arts",
 *          "sports": "World of Sport",
@@ -53,7 +54,7 @@
 * 
 * ### Installing from Github or NPM
 * 
-* Maqke sure you have either `npm` or `yarn` package manager installed on your system.
+* Make sure you have either `npm` or `yarn` package manager installed on your system.
 * From Github:
 * 
 *       npm install ohollmen/docindex
@@ -114,7 +115,7 @@
 * Run any web server capable of delivering static content.
 * You should be able to test your docindex.json by simply creating a symlink from your document directory to bundled docindex.html (e.g.):
 *
-*      ln -s bower_components/docindex/docindex.html docindex.html
+*      ln -s node_modules/docindex/docindex.html docindex.html
 * 
 * Example for running python (lightweight) web server - good at least for testing:
 *

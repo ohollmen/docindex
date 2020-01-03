@@ -12,22 +12,21 @@ Docindex has very low dependencies:
 Expects server to contain a JSON file in simple format describing
 docs and groups (JSON decorating with JS comments for doc and tutoring purposes, do not have these in your docindex.json):
 
-     {
-       "groups": {
-	 "crafts": "Crafts and Arts",
-	 "sports": "World of Sport",
-	 "history": "Historical Events",
-	 // ...
-       },
-       "docs" : [
-	 {
-	   // Title as it appears on Docindex accordion.
-	   "title": "Ted Williams - Greatest Baseball Hero", 
-	   "urlpath": "ted_williams.md", // URL to doc (relative to curr page)
-	   "grp": "sports" // Optional Group that doc belongs to (See "groups" above)
-	   
-	 }
-	 // ...
+      {
+        "groups": {
+        "crafts": "Crafts and Arts",
+        "sports": "World of Sport",
+        "history": "Historical Events",
+        // ...
+      },
+      "docs" : [
+        {
+          // Title as it appears on Docindex accordion.
+          "title": "Ted Williams - Greatest Baseball Hero", 
+          "urlpath": "ted_williams.md", // URL to doc (relative to curr page)
+          "grp": "sports" // Optional Group that doc belongs to (See "groups" above)
+        }
+        // ...
        ]
      }
 
@@ -112,7 +111,7 @@ There are 3 options to process URL Links to HTML Anchor ("a") elements:
 Run any web server capable of delivering static content.
 You should be able to test your docindex.json by simply creating a symlink from your document directory to bundled docindex.html (e.g.):
 
-     ln -s bower_components/docindex/docindex.html docindex.html
+     ln -s node_modules/docindex/docindex.html docindex.html
 
 Example for running python (lightweight) web server - good at least for testing:
 
