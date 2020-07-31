@@ -2,3 +2,4 @@ bower_components*
 node_modules*
 bower.json
 docindex.geany
+out
