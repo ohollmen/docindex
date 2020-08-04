@@ -140,11 +140,16 @@
 * ## internal API Documentation
 * 
 * Generate API documentation with JSDoc (Hint: do not use Ubuntu's outdated JSDoc):
+* 
 *      jsdoc docindex.js -c ../crudrest/jsdoc.conf.json
+* 
 * ## TODO
 * - Add server side component and search (content or title)
 * - In-mem db (server OR client)
 */
+
+
+/* jshint -W030 */
 
 // Running JSDoc: 
 
@@ -178,7 +183,9 @@ function docIndex(cfg) {
   
   //self = docIndex.docindex_conf;
   var keys = Object.keys(docIndex.docindex_conf);
+  // Copy defaults to "this"
   keys.forEach(function (key) {
+    // if (key == 'ondocchange') { docIndex.ondocchange = docIndex.docindex_conf[key]; continue; }
     this[key] = docIndex.docindex_conf[key];
   }, this);
   //docIndex.dump(this, "THIS(at end)");
@@ -188,7 +195,7 @@ function docIndex(cfg) {
 
 // docIndex.clone = function (x) { return JSON.parse(JSON.stringify(x));};
 docIndex.inited = 0;
-docIndex.dump = function (d, msg) { console.log((msg ? msg + ":" : "") + JSON.stringify(d, null, 2)); }
+docIndex.dump = function (d, msg) { console.log((msg ? msg + ":" : "") + JSON.stringify(d, null, 2)); };
 // Default settings for docIndex.
 docIndex.docindex_conf = {
   // "filename": "docindex.json", // Document index "Table of contents" JSON filename
@@ -202,7 +209,9 @@ docIndex.docindex_conf = {
   //"doclinkclass": "dlink", // Selector (likely class) for doc links
   "acc": false, // Use JQuery UI (collapsible) Accordion (default: false)
   "avoidcaching": true, // Add timestamp to links to work around strong caching tendencies
-  "debug": 0 // Produce verbose messages to console (at various parts of execution)
+  "debug": 0, // Produce verbose messages to console (at various parts of execution)
+  // "ondocchange": null, // Docchange callback to attach to docIndex.ondocchange. Cancelled. Set directly to docIndex
+  "settitle": 0
 };
 
 /** Convert AoO to Simple UL -list of doc links.
@@ -218,7 +227,7 @@ docIndex.gendoclist = function (docarr) {
   });
   cont += "</ul>\n";
   return(cont);
-}
+};
 /** Convert Docindex to grouped list suitable for (JQuery UI) Accordion.
 *
 * Automatically detects whether docindex has groups or not, and does the
@@ -246,7 +255,7 @@ docIndex.gendoclist_grp = function (data) {
     cont += "</div>\n"; // For Accordion
   });
   return(cont);
-}
+};
 
 
 // function hasgroups(data) {return data.filter(function (it) { return it.grp; }).length; }
@@ -258,6 +267,10 @@ docIndex.gendoclist_grp = function (data) {
 * - Places converted HTML content into DIV named 'doccontent'
 *  sidebar and doccontent are animated with fadein / fadeout during transition.
 * 
+* Allow application to intercept doc change event with callback attached to docIndex.ondocchange (e.g.):
+* 
+*     docIndex.ondocchange = function (docurl) { console.log("Loaded doc:" + docurl); }
+*
 * @param ev {object} Click Event on document link.
 * @todo Support config options for converting links (none, auto, in md, in html)
 */
@@ -276,21 +289,26 @@ docIndex.onDocClick = function (ev) {
      // TODO: Preprocess URL:s to avoid '_' in URL:s to become emphasis (<em>)
      // This will be somewhat tricky. For now - live with it.
      // Convert MD->HTML
-     var ht = docIndex.converter.makeHtml(data);
+     var ht;
+     if (url_f.match(/\.html$/)) { ht = data; } // Simple HTML support
+     else { ht = docIndex.converter.makeHtml(data); }
      cfg.debug && console.log("Converted: " + data.length +" B (MD) to "+ht.length+" B (HTML)");
      // Additionally convert links by current policy ...
      //var lp = cfg.linkproc;
      if (cfg.linkproc == "none") {}
+     // Removed "\<" escapes as "unnecessary" (jshint: Unexpected escaped character '<' in regular expression.)
      // Convert to link
      else if (cfg.linkproc == "post") {
-     // if ( ) {...
-     ht = ht.replace(/(\bhttps?:\/\/[^\s\<\>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
+       // if ( ) {...
+       ht = ht.replace(/(\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
      }
      // Auto mode menas that if no links are found, only then conversion will kick in.
      else if ((cfg.linkproc == "auto") && ! ht.match(/<a\s+/)) {
-       ht = ht.replace(/(\bhttps?:\/\/[^\s\<\>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
+       
+       ht = ht.replace(/(\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
      }
      // console.log(ht); // Re DEBUG
+     if (docIndex.ondocchange && (typeof docIndex.ondocchange == 'function')) { docIndex.ondocchange(url_f); }
      //$('#doccontent').html(ht);
      document.getElementById('doccontent').innerHTML = ht;
      if ($) {
@@ -305,7 +323,7 @@ docIndex.onDocClick = function (ev) {
   .fail(function(err) {
     alert( "Error Loading doc ('" + url + "') - " + err.statusText); // JSON.stringify(this) JSON.stringify(err)
   });
-}
+};
 /** Click Handler for navigating "Back to Index".
 * @param ev {object} Click Event on "Back to Index" link.
 */
@@ -314,7 +332,7 @@ docIndex.onIndexClick = function (ev) {
   $('#sidebar').fadeIn();
   $('#doccontent').fadeOut();
   return false;
-}
+};
 /** Initialize Doc Listing with doc index data.
  * Hook callback to load documents on demand (click event).
  * @param data {object} Documemt Index (docindex.json) JSON data (See main doc for explanation of structure).
@@ -333,8 +351,9 @@ docIndex.prototype.initdocs = function(data) {
     if (this.postloadcb && (typeof this.postloadcb == 'function')) { this.postloadcb(data); }
     var title = data.title || "Misc. Markdown Docs";
     var telid = this.pagetitleid || 'pagetitle';
-    document.getElementsByTagName('title')[0].innerHTML = title;
-    document.getElementById(telid).innerHTML	= title; // From config
+    if (title && this.settitle) { document.getElementsByTagName('title')[0].innerHTML = title; }
+    var tel = document.getElementById(telid);
+    if (title && tel && telid) { tel.innerHTML	= title; } // From config
     // $('head title').html(title); $('#pagetitle').html(title);
     // Simple linear list
     //OLD:var cont = docIndex.gendoclist(data);
@@ -373,5 +392,5 @@ docIndex.prototype.initdocs = function(data) {
     if (this.acc) {
       $("#sidebar").accordion(aopts);
     }
-  }
+  };
 
