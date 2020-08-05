@@ -1,6 +1,6 @@
 {
   "name": "docindex",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Create Lightweight MD Document Listing Web Pages",
   "author": {
     "name": "Olli Hollmen",
@@ -19,8 +19,12 @@
   "devDependencies": {
     "jsdoc": "3.6.3"
   },
+  "scripts": {
+    "jsdoc":"jsdoc *.js -R README.md -c jsdoc.conf.json"
+  },
   "keywords": [
     "doc",
+    "documentation",
     "technical documentation",
     "markdown",
     "document website"
@@ -28,9 +32,16 @@
   "license": "MIT",
   "private": false,
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/ohollmen/docindex.git"
+    "type": "git",
+    "url": "https://github.com/ohollmen/docindex.git"
   },
-  "files": ["package.json","docindex.js","docindex.html","docindex.css", "docindex_main.js", "README.md"]
-  
+  "files": [
+    "package.json",
+    "docindex.js",
+    "docindex.html",
+    "docindex.css",
+    "docindex.json",
+    "docindex_main.js",
+    "README.md"
+  ]
 }
