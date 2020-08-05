@@ -129,3 +129,32 @@ name you created symlink by).
 - Use as a toolkit: Above plus use individual calls to JS api
 - Use as an concept: You think that docindex is inflexible and sucks but
   you need a similar solution to manage Markdown docs. Write your own !
+
+## Running the Included Demo
+
+You either cloned docIndex from git or installed it by NPM (or yarn).
+
+Flow for Git Install, run in the top level ("docindex") directory of the clone:
+    
+    # npm or yarn install for dependencies
+    npm install
+    # Cannot Install docindex itself by NPM rules (npm install docindex) !
+    # So fake "docindex as dependency of itself" by a symlink:
+    pushd node_modules; ln -s .. docindex ; popd
+    # Usess included docindex file (docindex.demo.json)
+    # Run web server (of your preference, here minimal python web server for static content)
+    python -m SimpleHTTPServer
+    # Look at URL http://localhost:8000 with browser
+
+Flow for NPM based install (for another app, which has docindex in package.json or by running npm install docindex woithout any
+package.json driving the installation):
+
+    cd node_modules/docindex
+    # Make appropriate symlinks
+    ln -s .. node_modules
+    # Or brute force install dependencies in sub-directories of "docindex"
+    # npm install
+    # Run web server ... (see above)
+    python -m SimpleHTTPServer
+
+
