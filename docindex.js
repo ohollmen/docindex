@@ -2,8 +2,8 @@
 *
 * ## Docindex - Simple way of creating Markdown Doc collection pages
 *
-* Provides a basic toolkit for building simple markdown document pages
-* with documents grouped by topic.
+* Provides a basic toolkit for building simple markdown documentation pages
+* with documents grouped by topic. Focus is on organized collection of documents, not a single doc.
 * 
 * Docindex has very low dependencies:
 * - JQuery is currently used for loading docindex.json and MD docs.
@@ -61,20 +61,30 @@
 *       # ... OR ...
 *       yarn add ohollmen/docindex
 * 
-* From NPM (If this made it's way to NPM):
+* From NPM:
 * 
 *       npm install docindex
 *       # ... OR ...
 *       yarn add docindex
 *
-* ### HTML Page
+* ### Docindex HTML Page
 * 
 * HTML Page that docindex uses must have 2 divs with specific id:s declared:
 * - sidebar - Left side document listing and navigation area
 * - doccontent - Area to display document in
 * 
 * See section "Config Options ..." and "doclistid" and "docareaid" for configurability.
-*
+* Example HTML fragment for `"sidebar"` and `"doccontent"` areas
+* ``` 
+* ...
+* <div id="content">
+<!-- Document navigation -->
+<div id="sidebar"></div>
+<!-- Doclist Content goes here -->
+<div id="doccontent" style="display: none;"></div>
+</div>
+...
+* ```
 * ### Using Docindex in your JS
 *
 *      window.onload = function () {
@@ -188,6 +198,19 @@ function docIndex(cfg) {
     // if (key == 'ondocchange') { docIndex.ondocchange = docIndex.docindex_conf[key]; continue; }
     this[key] = docIndex.docindex_conf[key];
   }, this);
+  // Set nosidebarhide from final
+  // docIndex.nosidebarhide = this.nosidebarhide ? 1 : 0;
+  // https://www.kirupa.com/html5/setting_css_styles_using_javascript.htm
+  var sb = document.getElementById('sidebar');
+  var dc = document.getElementById('doccontent');
+  if (!sb) { return alert("No sidebar element !"); }
+  if (!dc) { return alert("No doccontent element !"); }
+  if (this.nosidebarhide) {
+    docIndex.nosidebarhide = 1;
+    sb.classList.add("sidebar_static");
+    dc.classList.add("doccontent_shifter");
+    
+  }
   //docIndex.dump(this, "THIS(at end)");
   // return docindex_conf;
 }
@@ -263,7 +286,9 @@ docIndex.gendoclist_grp = function (data) {
 
 /** Document link click event handler.
 * - Loads raw MD Document (by href URL) and Converts it to HTML.
-* - Auto converts links to HTML anchor elements (as configured by conversion policy)
+* - Supports HMTL docs (w/o html/head/body wrappings) without conversion
+* - Converts links to HTML anchor elements (as configured by conversion policy)
+*   - config options for converting links: none, post, auto (applied both in converted md, in raw html)
 * - Places converted HTML content into DIV named 'doccontent'
 *  sidebar and doccontent are animated with fadein / fadeout during transition.
 * 
@@ -272,7 +297,7 @@ docIndex.gendoclist_grp = function (data) {
 *     docIndex.ondocchange = function (docurl) { console.log("Loaded doc:" + docurl); }
 *
 * @param ev {object} Click Event on document link.
-* @todo Support config options for converting links (none, auto, in md, in html)
+* @todo Support 
 */
 docIndex.onDocClick = function (ev) {
   ev.preventDefault();
@@ -290,7 +315,7 @@ docIndex.onDocClick = function (ev) {
      // This will be somewhat tricky. For now - live with it.
      // Convert MD->HTML
      var ht;
-     if (url_f.match(/\.html$/)) { ht = data; } // Simple HTML support
+     if (url_f.match(/\.html$/)) { ht = data; } // Simple HTML support.
      else { ht = docIndex.converter.makeHtml(data); }
      cfg.debug && console.log("Converted: " + data.length +" B (MD) to "+ht.length+" B (HTML)");
      // Additionally convert links by current policy ...
@@ -310,9 +335,10 @@ docIndex.onDocClick = function (ev) {
      // console.log(ht); // Re DEBUG
      if (docIndex.ondocchange && (typeof docIndex.ondocchange == 'function')) { docIndex.ondocchange(url_f); }
      //$('#doccontent').html(ht);
+     ////////////////////// Display /////////////////////////
      document.getElementById('doccontent').innerHTML = ht;
      if ($) {
-       $('#'+cfg.doclistid).fadeOut(); // .hide() // "#sidebar"
+       if (!docIndex.nosidebarhide) {  $('#'+cfg.doclistid).fadeOut(); }// .hide() // "#sidebar"
        $('#'+cfg.docareaid).fadeIn(); // .show() // '#doccontent'
      }
      return false;
@@ -329,7 +355,7 @@ docIndex.onDocClick = function (ev) {
 */
 docIndex.onIndexClick = function (ev) {
   if (!$) { return false; }
-  $('#sidebar').fadeIn();
+  if (!docIndex.nosidebarhide) { $('#sidebar').fadeIn(); } // Not neded as we hardly click on doc "back to index" ?
   $('#doccontent').fadeOut();
   return false;
 };
