@@ -11,7 +11,7 @@
   "dependencies": {
     "bootstrap": "~3.3.5",
     "jquery": "~2.1.4",
-    "showdown": "~1.2.2"
+    "showdown": "~1.9.1"
   },
   "optionalDependencies": {
     "jquery-ui": "~1.12.1"
