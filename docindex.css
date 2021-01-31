@@ -4,7 +4,7 @@
 .pre {background-color: #CCCCCC; border: 1px solid black; padding: 15px;}
 /* Sidebar UL */
 #sidebar { margin-top: 15px; }
-#sidebar ul { list-style-type: none; padding: 15px; margin: 0px 10px; margin-bottom: 10px; border: 1px solid #999999; width: 300px; }
+#sidebar ul { list-style-type: none; padding: 5px 15px 5px 15px; margin: 0px 10px 10px 10px; border: 1px solid #999999; width: 300px; border-radius: 5px; }
 #sidebar li { border-bottom: 1px solid #999999; }
 #sidebar h4 { padding: 5px 15px; margin: 0px 10px ;  border: 1px solid black; width: 300px; } 
 #sidebar h4 { color: white; background-color: black; }

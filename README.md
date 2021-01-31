@@ -53,9 +53,7 @@ following members:
 Maqke sure you have either `npm` or `yarn` package manager installed on your system.
 From Github:
 
-      npm install ohollmen/docindex
-      # ... OR ...
-      yarn add ohollmen/docindex
+      git clone https://github.com/ohollmen/docindex.git
 
 From NPM (If this made it's way to NPM):
 

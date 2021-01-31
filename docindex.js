@@ -319,6 +319,7 @@ docIndex.onDocClick = function (ev) {
      else { ht = docIndex.converter.makeHtml(data); }
      cfg.debug && console.log("Converted: " + data.length +" B (MD) to "+ht.length+" B (HTML)");
      // Additionally convert links by current policy ...
+     cfg.debug && console.log("Convert links by: "+cfg.linkproc);
      //var lp = cfg.linkproc;
      if (cfg.linkproc == "none") {}
      // Removed "\<" escapes as "unnecessary" (jshint: Unexpected escaped character '<' in regular expression.)
