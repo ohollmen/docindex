@@ -99,7 +99,7 @@
 * Allow passing in configuration with:
 * 
 * - "postloadcb" - Post DocIndex JSON load callback, gets passed docindex.json data structure (default: none). Allows manipulating (e.g. filtering) structure, no need to return value.
-* - "linkproc" - HTML Anchor / link processing policy (none,post,auto, default: none) - See below
+* - "linkproc" - HTML Anchor / link processing policy ("none","post","auto", default: "none") - See below
 * - "pagetitleid" - Page title element inside HTML body (default: "pagetitle", which works for the bundled default page)
 * - "doclistid" - Doc Listing sidebar element ID to present as Accordion (default: "sidebar")
 * - "docareaid" -  Document HTML content display area (default: "doccontent")
@@ -172,13 +172,14 @@
 //$('#content').on('click', 'paged a', getpage); // getpage is paging page-fetch function
 // ALSO: Note difference between  html() (innerHTML) and replaceWith() (element itself + any inner content)
 
-/** Class / Constructor for docIndex.
+/** Constructor for docIndex.
 * See Main doc for config options.
 * @constructor
 */
 function docIndex(cfg) {
   cfg = cfg || {};
   var debug = cfg.debug || docIndex.docindex_conf.debug || 0;
+  //console.log("DEBUG: "+debug);
   // Override defaults
   Object.keys(cfg).forEach(function (k) {
     debug && console.log("Config key: " + k);
@@ -190,9 +191,9 @@ function docIndex(cfg) {
     docIndex.converter = new showdown.Converter();
     docIndex.inited = 1;
   }
-  
+  if (debug) { this.debug = debug; }
   //self = docIndex.docindex_conf;
-  var keys = Object.keys(docIndex.docindex_conf);
+  var keys = Object.keys(docIndex.docindex_conf); // Class level keys
   // Copy defaults to "this"
   keys.forEach(function (key) {
     // if (key == 'ondocchange') { docIndex.ondocchange = docIndex.docindex_conf[key]; continue; }
@@ -217,28 +218,46 @@ function docIndex(cfg) {
 
 
 // docIndex.clone = function (x) { return JSON.parse(JSON.stringify(x));};
-docIndex.inited = 0;
+docIndex.inited = 0; // For e.g. storing converter instance
 docIndex.dump = function (d, msg) { console.log((msg ? msg + ":" : "") + JSON.stringify(d, null, 2)); };
-// Default settings for docIndex.
+/** Default settings for docIndex.
+* Settings override order illustrated:
+* ```
+*   ---------------
+*   | Class Level | docIndex.docindex_conf - Most sane and good defaults
+*   ---------------
+*         |
+*         V
+*   ---------------------
+*   | Instantiation level|  new docIndex({"...": "...", ..});
+*   ---------------------
+*         |
+*         V
+*   -----------------------
+*   | Docindex JSON Config | /docindex.json
+*   -----------------------
+*       
+* ```
+*/
 docIndex.docindex_conf = {
-  // "filename": "docindex.json", // Document index "Table of contents" JSON filename
-  // "settitle": true, // Set Page title if exists in docindex.json
-  "postloadcb": null, // Post DocIndex JSON load callback, gets passed docindex.json data structure
+  //OLD: "filename": "docindex.json", // Document index "Table of contents" JSON filename. NEW: In loading call
+  //OLD: "settitle": true,
+  "postloadcb": null, // Post DocIndex JSON load callback, gets passed docindex.json data structure (top-Object)
   "linkproc": "none", // HTML Anchor / link processing policy (none,post,auto)
   // ID:s and classes. TODO: Change to selectors ?
-  "pagetitleid": "pagetitle", // Page title element inside HTML body (default: "pagetitle", which works for the bundled default page)
+  "pagetitleid": "pagetitle", // Page title element id inside HTML body (default: "pagetitle", which works for the bundled default page)
   "doclistid": "sidebar", // Doc Listing sidebar element ID to present as Accordion (default: "sidebar")
   "docareaid": "doccontent", // Document HTML content display area (default: "doccontent")
-  //"doclinkclass": "dlink", // Selector (likely class) for doc links
+  //"doclinkclass": "dlink", // Selector (likely class) for doc links. NOW: Internal (see: gendoclist() => "dlink")
   "acc": false, // Use JQuery UI (collapsible) Accordion (default: false)
   "avoidcaching": true, // Add timestamp to links to work around strong caching tendencies
   "debug": 0, // Produce verbose messages to console (at various parts of execution)
   // "ondocchange": null, // Docchange callback to attach to docIndex.ondocchange. Cancelled. Set directly to docIndex
-  "settitle": 0
+  "settitle": 0  // Set Page title if exists in docindex.json (and if pagetitleid is set and the element is found)
 };
 
 /** Convert AoO to Simple UL -list of doc links.
-* @param docarr {array} Array of Document Objects (as part of docindex.json)
+* @param docarr {array} - Array of Document Objects (as part of docindex.json)
 * @return HTML content (UL list) for single document group
 */
 docIndex.gendoclist = function (docarr) {
@@ -246,7 +265,7 @@ docIndex.gendoclist = function (docarr) {
   var cont = "<ul>\n";
   docarr.map(function (item) {
      // if (!item.type) { return; } // Do NOT mandate
-     cont += "<li><a class=\"dlink\" href=\""+ item.urlpath +"\">"+ item.title +"</a></li>\n";
+     cont += "<li><a class=\"dlink\" href=\""+ item.urlpath +"\" data-did=\""+item.id+"\">"+ item.title +"</a></li>\n";
   });
   cont += "</ul>\n";
   return(cont);
@@ -261,10 +280,15 @@ docIndex.gendoclist = function (docarr) {
 docIndex.gendoclist_grp = function (data) {
   // Create groups
   var groupnames = data.groups; // {}
+  if (!data.docs) { return alert("No Docs section in JSON"); }
   if (!Array.isArray(data.docs)) { return alert("Docs section not in Array");}
+  // NEW: Generate link id:s
+  var id = 1;
+  data.docs.forEach(function (doc) { doc.id = id; id++; });
   if (!groupnames) { return docIndex.gendoclist(data.docs); }
   
-  var grps = {};
+  var grps = {}; // Temp/local only (!)
+  
   data.docs.forEach(function (doc) { grps[doc.grp] = []; }); // Init ONLY
   // For each of groups create content
   var cont = "";
@@ -285,7 +309,7 @@ docIndex.gendoclist_grp = function (data) {
 // function hasgroups(data) {return data.groups; }
 
 /** Document link click event handler.
-* - Loads raw MD Document (by href URL) and Converts it to HTML.
+* - Loads raw MD Document (by href URL) and Converts it to HTML (if not already HTML).
 * - Supports HMTL docs (w/o html/head/body wrappings) without conversion
 * - Converts links to HTML anchor elements (as configured by conversion policy)
 *   - config options for converting links: none, post, auto (applied both in converted md, in raw html)
@@ -314,27 +338,32 @@ docIndex.onDocClick = function (ev) {
      // TODO: Preprocess URL:s to avoid '_' in URL:s to become emphasis (<em>)
      // This will be somewhat tricky. For now - live with it.
      // Convert MD->HTML
-     var ht;
-     if (url_f.match(/\.html$/)) { ht = data; } // Simple HTML support.
-     else { ht = docIndex.converter.makeHtml(data); }
-     cfg.debug && console.log("Converted: " + data.length +" B (MD) to "+ht.length+" B (HTML)");
-     // Additionally convert links by current policy ...
-     cfg.debug && console.log("Convert links by: "+cfg.linkproc);
+     var ht; var htdebug = 1;
+     if (url_f.match(/\.html$/)) { ht = data; } // Simple HTML support (No conversion)
+     else {
+       ht = docIndex.converter.makeHtml(data);
+       cfg.debug && console.log("Converted: " + data.length +" B (MD) to "+ht.length+" B (HTML)");
+     }
+     // cfg.debug > 1
+     if (htdebug) { console.log("HTML from "+url_f+" before link-conversion:\n"+ht); }
+     ////////////////// Link Conversion "Heuristics" /////////////////////
+     // Additionally convert links by current policy ... (none, post, auto)
+     cfg.debug && console.log("Convert links by policy: "+cfg.linkproc);
      //var lp = cfg.linkproc;
      if (cfg.linkproc == "none") {}
      // Removed "\<" escapes as "unnecessary" (jshint: Unexpected escaped character '<' in regular expression.)
      // Convert to link
      else if (cfg.linkproc == "post") {
        // if ( ) {...
-       ht = ht.replace(/(\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
+       ht = ht.replace(/[^"](\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
      }
-     // Auto mode menas that if no links are found, only then conversion will kick in.
+     // Auto mode means that if no links are found, only then conversion will kick in.
      else if ((cfg.linkproc == "auto") && ! ht.match(/<a\s+/)) {
        
-       ht = ht.replace(/(\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
+       ht = ht.replace(/[^"](\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
      }
-     // console.log(ht); // Re DEBUG
      if (docIndex.ondocchange && (typeof docIndex.ondocchange == 'function')) { docIndex.ondocchange(url_f); }
+     if (htdebug) { console.log("HTML from "+url_f+" after link-conversion:\n"+ht); }
      //$('#doccontent').html(ht);
      ////////////////////// Display /////////////////////////
      document.getElementById('doccontent').innerHTML = ht;
@@ -370,17 +399,36 @@ docIndex.prototype.initdocs = function(data) {
     // if (this.filtercb && (typeof this.filtercb == 'function')) {
     //    data[???] = data[???].filter(this.filtercb);
     // }
+    if (!data) { return alert("No Doc Index structure returned"); }
     if (typeof data != 'object') { return alert("Doc Index is not in correct (JSON Object) format"); }
+    // Various settings from docindex.json. Set both to this and docIndex.docindex_conf
+    // (As this may not be avail e.g. in onDocClick).
+    if (data.debug)    { this.debug = data.debug; docIndex.docindex_conf.debug = data.debug; }
+    if (data.linkproc) { this.linkproc = data.linkproc; docIndex.docindex_conf.linkproc = data.linkproc; }
+    //console.log(this);
     this.debug && console.log("Docindex w. " +data.docs.length+ " docs, " +Object.keys(data.groups || {}).length+ " groups.");
     // Validate data.docs and (optional) data.groups here ?
-    if (!Array.isArray(data.docs)) { return alert("No 'docs' section in docIndex !"); }
+    if (!Array.isArray(data.docs)) { return alert("No 'docs' section (as Array) in docIndex !"); }
     
     if (this.postloadcb && (typeof this.postloadcb == 'function')) { this.postloadcb(data); }
     var title = data.title || "Misc. Markdown Docs";
-    var telid = this.pagetitleid || 'pagetitle';
+    var telid = this.pagetitleid || 'pagetitle'; // telid = Title element id
     if (title && this.settitle) { document.getElementsByTagName('title')[0].innerHTML = title; }
-    var tel = document.getElementById(telid);
+    var tel = document.getElementById(telid); // Note: gets set only if found
     if (title && tel && telid) { tel.innerHTML	= title; } // From config
+    // Default Doc
+    var defdocnode;
+    // Allow number
+    if (typeof data.defdoc != 'undefined') {
+      
+      if ((typeof data.defdoc == 'number') ) {
+        defdocnode = data.docs[data.defdoc];
+      } // && data.defdoc.match(//)
+      else if (typeof data.defdoc == 'string') {
+        defdocnode = data.docs.find(function (d) { return d.urlpath == data.defdoc; });
+      }
+      
+    }
     // $('head title').html(title); $('#pagetitle').html(title);
     // Simple linear list
     //OLD:var cont = docIndex.gendoclist(data);
@@ -408,9 +456,10 @@ docIndex.prototype.initdocs = function(data) {
       } // );
     }
     doclist_init(data);
+    this.docs = data.docs;
     // TODO: Use configurable ID
     var ilink = document.getElementById('index');
-    ilink.addEventListener('click', docIndex.onIndexClick); // [, options]
+    if (ilink) { ilink.addEventListener('click', docIndex.onIndexClick); } // [, options]
     // $('#index').click(docIndex.onIndexClick);
     // Accordion Options and Instantiation
     // Add: "header": "h4",
@@ -419,5 +468,24 @@ docIndex.prototype.initdocs = function(data) {
     if (this.acc) {
       $("#sidebar").accordion(aopts);
     }
+    // Optional autoload of default docIndex.onDocClick (https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events)
+    // 
+    // 
+    if (defdocnode) {
+      
+      var el = $("[href='"+defdocnode.urlpath+"']").get(0);
+      if (el) {
+        var event = new Event('click');
+	el.dispatchEvent(event);
+      }
+    }
   };
-
+/** Get Document item by it's id.
+* Id's are assigned 
+*/
+docIndex.prototype.docitem = function (did) {
+  if (!this.docs) { console.error("No docs member to find from"); return undefined; }
+  if (!Array.isArray(this.docs)) { console.error("docs not in Array (for find())"); return undefined; }
+  
+  return this.docs.find(function (doc) { return doc.id == did; });
+};
