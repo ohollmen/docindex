@@ -1,149 +1,17 @@
 /** @file
 *
-* ## Docindex - Simple way of creating Markdown Doc collection pages
-*
-* Provides a basic toolkit for building simple markdown documentation pages
-* with documents grouped by topic. Focus is on organized collection of documents, not a single doc.
-* 
-* Docindex has very low dependencies:
-* - JQuery is currently used for loading docindex.json and MD docs.
-* - JQuery UI can provide Accordion option when "acc" option is set.
-*
-* ### DocIndex JSON Format
-* 
-* Expects server to contain a JSON file in simple format describing
-* docs and groups (JSON decorating with JS comments for doc and tutoring purposes, do not have these in your docindex.json):
-*
-*      {
-*        "title": "Crafts, Sports and Historical Gallery",
-*        "groups": {
-*          "crafts": "Crafts and Arts",
-*          "sports": "World of Sport",
-*          "history": "Historical Events",
-*          // ...
-*        },
-*        "docs" : [
-*          {
-*            // Title as it appears on Docindex accordion.
-*            "title": "Ted Williams - Greatest Baseball Hero", 
-*            "urlpath": "ted_williams.md", // URL to doc (relative to curr page)
-*            "grp": "sports" // Optional Group that doc belongs to (See "groups" above)
-*            
-*          }
-*          // ...
-*        ]
-*      }
-*
-* Format has following members and sections (on top level):
-* 
-* - "title"  - Title (string) of Document page
-* - "docs"   - Array of Objects with each doc declared by title,urlpath,grp (See below)
-* - "groups" - Optional grouping of documents (in Object)
-*   - Missing "groups" will be auto-detected and sane behaviour will be
-*     triggered
-*   - Groups will appear as (JQuery UI) Accordion items on page
-*
-* As further demonstrated by example docindex.json (above) the object nodes in "docs" have
-* following members:
-* 
-* - "title"   - Name of the Doc as it should appear in left side doclisting.
-* - "urlpath" - URL of document (relative to docroot or current URL of web server)
-* - "grp"     - Group that doc should fall under (when using groups)
-* 
-* ## Setting up Docindex
-* 
-* ### Installing from Github or NPM
-* 
-* Make sure you have either `npm` or `yarn` package manager installed on your system.
-* From Github:
-* 
-*       npm install ohollmen/docindex
-*       # ... OR ...
-*       yarn add ohollmen/docindex
-* 
-* From NPM:
-* 
-*       npm install docindex
-*       # ... OR ...
-*       yarn add docindex
-*
-* ### Docindex HTML Page
-* 
-* HTML Page that docindex uses must have 2 divs with specific id:s declared:
-* - sidebar - Left side document listing and navigation area
-* - doccontent - Area to display document in
-* 
-* See section "Config Options ..." and "doclistid" and "docareaid" for configurability.
-* Example HTML fragment for `"sidebar"` and `"doccontent"` areas
-* ``` 
-* ...
-* <div id="content">
-<!-- Document navigation -->
-<div id="sidebar"></div>
-<!-- Doclist Content goes here -->
-<div id="doccontent" style="display: none;"></div>
-</div>
-...
-* ```
-* ### Using Docindex in your JS
-*
-*      window.onload = function () {
-*        // Create docIndex with settings overriden (as needed)
-*        var cfg = new docIndex({linkproc: "post"});
-*        // Load Doc index file and group listings data.
-*        $.getJSON("docindex.json", function (d) { cfg.initdocs(d); });
-*      };
-* 
-* ### Config Options for docIndex
-* 
-* Allow passing in configuration with:
-* 
-* - "postloadcb" - Post DocIndex JSON load callback, gets passed docindex.json data structure (default: none). Allows manipulating (e.g. filtering) structure, no need to return value.
-* - "linkproc" - HTML Anchor / link processing policy ("none","post","auto", default: "none") - See below
-* - "pagetitleid" - Page title element inside HTML body (default: "pagetitle", which works for the bundled default page)
-* - "doclistid" - Doc Listing sidebar element ID to present as Accordion (default: "sidebar")
-* - "docareaid" -  Document HTML content display area (default: "doccontent")
-* - "acc" - Use JQuery UI (collapsible) Accordion (default: false)
-* - "avoidcaching" - Set additional unique parameters (without specific meaning) on URL:s
-*    to avoid caching (on client side)
-* - "debug" - Produce verbose messages to console (at various parts of execution)
-* 
-* Whenever defaults are good - you don't need to bothe passing anything.
-*
-* ### URL Link (URL-to-HTMLanchor) conversions
-* 
-* There are 3 options to process URL Links to HTML Anchor ("a") elements:
-* 
-* - none - No processing or conversions are done
-* - auto - If anchor ("a") elements are detected in document it is assumes that MD author
-*     had all URL:s she/he wants as links authored as anchors already in MD markup. If no
-*     links are found full URL-to-anchor conversion is 
-* - post - All remaining non-anchor URL:s in document are unconditionally converted.
-* 
-* ## Web server
-*
-* Run any web server capable of delivering static content.
-* You should be able to test your docindex.json by simply creating a symlink from your document directory to bundled docindex.html (e.g.):
-*
-*      ln -s node_modules/docindex/docindex.html docindex.html
-* 
-* Example for running python (lightweight) web server - good at least for testing:
-*
-*      > python -m SimpleHTTPServer
-*      Serving HTTP on 0.0.0.0 port 8000 ...
-* 
-* 
-* Access the page via URL: http://localhost:8000/docindex.html (Use as basename whatever
-* name you created symlink by).
-* 
-* ## Usage forms of docindex
-* 
-* - Use as-is: Simple use case may allow to using the docindex.html example (and associated CSS) and docIndex module as is. Only create a docindex.json for *your* docs (docindex toolkit will use this to create docindex page).
-* - Use almost as-is: Hack HTML and CSS to suite your need and style
-* - Use as a toolkit: Above plus use individual calls to JS api
-* - Use as an concept: You think that docindex is inflexible and sucks but
-*   you need a similar solution to manage Markdown docs. Write your own !
-*
+Minimal demo:
+git clone https://github.com/ohollmen/docindex.git
+cd docindex
+git clone https://github.com/showdownjs/showdown.git
+
+
+# Simulate node_modules for docindex.html Script and CSS URL:s
+mkdir node_modules
+ln -s `pwd` node_modules/docindex
+# Showdown in showdown/dist/showdown.js
+ln -s `pwd`/showdown node_modules/showdown
+python3 -m http.server
 */
 
 /*
@@ -285,16 +153,16 @@ docIndex.gendoclist_grp = function (data) {
   // NEW: Generate link id:s
   var id = 1;
   data.docs.forEach(function (doc) { doc.id = id; id++; });
-  if (!groupnames) { return docIndex.gendoclist(data.docs); }
+  if (!groupnames) { return docIndex.gendoclist(data.docs); } // Single flat list w. No group title
   
   var grps = {}; // Temp/local only (!)
   
-  data.docs.forEach(function (doc) { grps[doc.grp] = []; }); // Init ONLY
+  data.docs.forEach(function (doc) { grps[doc.grp] = []; }); // Init ONLY (grp discovered from doc - to [])
   // For each of groups create content
   var cont = "";
   var grpkeys = Object.keys(grps);
   data.docs.forEach(function (doc) { grps[doc.grp].push(doc); });
-  //console.log(JSON.stringify(grps, null, 2)); // DEBUG
+  data.debug && console.log("GROUPS:"+JSON.stringify(grps, null, 2)); // DEBUG
   grpkeys.forEach(function (gk) {
     cont += "<h3>" + (groupnames[gk] || gk) + "</h3>\n\n";
     cont += "<div>\n"; // For Accordion
@@ -333,13 +201,16 @@ docIndex.onDocClick = function (ev) {
   // Prevent caching ?
   if (docIndex.docindex_conf.avoidcaching) {var ms = new Date().getTime();url_f += "?t=" + ms;}
   //$('#doccontent').append(url); // DEBUG
+  // TODO: Move to docIndex.docLoad / docDisplay
   function onDocLoad(data) {
+    if (!data) { return alert("Requested Document could not be loaded !"); }
     var cfg = docIndex.docindex_conf;
      // TODO: Preprocess URL:s to avoid '_' in URL:s to become emphasis (<em>)
      // This will be somewhat tricky. For now - live with it.
      // Convert MD->HTML
      var ht; var htdebug = 1;
      if (url_f.match(/\.html$/)) { ht = data; } // Simple HTML support (No conversion)
+     // TODO: more checks here to support more diverse content (pdf ? svg ?)
      else {
        ht = docIndex.converter.makeHtml(data);
        cfg.debug && console.log("Converted: " + data.length +" B (MD) to "+ht.length+" B (HTML)");
@@ -353,20 +224,23 @@ docIndex.onDocClick = function (ev) {
      if (cfg.linkproc == "none") {}
      // Removed "\<" escapes as "unnecessary" (jshint: Unexpected escaped character '<' in regular expression.)
      // Convert to link
+     // NEW: Add extra space **back in** (just before "<a ")in replace(.., " <a ...") as
+     // match(/[^"]/..) "eats" one whitespace. For cases where it gets added redundantly, the extra space
+     // should not hurt anything (in HTML).
      else if (cfg.linkproc == "post") {
        // if ( ) {...
-       ht = ht.replace(/[^"](\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
+       ht = ht.replace(/[^"](\bhttps?:\/\/[^\s<>]+)/g, " <a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
      }
      // Auto mode means that if no links are found, only then conversion will kick in.
      else if ((cfg.linkproc == "auto") && ! ht.match(/<a\s+/)) {
        
-       ht = ht.replace(/[^"](\bhttps?:\/\/[^\s<>]+)/g, "<a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
+       ht = ht.replace(/[^"](\bhttps?:\/\/[^\s<>]+)/g, " <a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
      }
      if (docIndex.ondocchange && (typeof docIndex.ondocchange == 'function')) { docIndex.ondocchange(url_f); }
      if (htdebug) { console.log("HTML from "+url_f+" after link-conversion:\n"+ht); }
-     //$('#doccontent').html(ht);
      ////////////////////// Display /////////////////////////
-     document.getElementById('doccontent').innerHTML = ht;
+     //$('#doccontent').html(ht); // OLD, JQ-coupled
+     document.getElementById(cfg.docareaid).innerHTML = ht; // OLD: 'doccontent'
      if ($) {
        if (!docIndex.nosidebarhide) {  $('#'+cfg.doclistid).fadeOut(); }// .hide() // "#sidebar"
        $('#'+cfg.docareaid).fadeIn(); // .show() // '#doccontent'
@@ -375,10 +249,13 @@ docIndex.onDocClick = function (ev) {
   }
   // TODO: Move callback to .done()
   // TODO: Support other http loading
+  /*
   var jqxhr = $.get(url_f, onDocLoad)
   .fail(function(err) {
     alert( "Error Loading doc ('" + url + "') - " + err.statusText); // JSON.stringify(this) JSON.stringify(err)
   });
+  */
+  docIndex.htget(url_f, onDocLoad);
 };
 /** Click Handler for navigating "Back to Index".
 * @param ev {object} Click Event on "Back to Index" link.
@@ -389,9 +266,13 @@ docIndex.onIndexClick = function (ev) {
   $('#doccontent').fadeOut();
   return false;
 };
-/** Initialize Doc Listing with doc index data.
- * Hook callback to load documents on demand (click event).
- * @param data {object} Documemt Index (docindex.json) JSON data (See main doc for explanation of structure).
+/** Initialize Doc Listing with doc index (JSON) data.
+ * - Allow overriding current setting for this.debug by data.debug
+ * - Allow overriding docIndex.docindex_conf.linkproc by data.linkproc
+ * - Apply postloadcb callback (if configured) as needed (passing data to it)
+ * - Hook callback to load documents on demand (on click event).
+ * - 
+ * @param data {object} Document Index (docindex.json) JSON data (See main doc for explanation of structure).
  */
 docIndex.prototype.initdocs = function(data) {
     // TODO: Allow filtering entries by certain attribute (e.g. owner or pattern in name)
@@ -451,7 +332,7 @@ docIndex.prototype.initdocs = function(data) {
       //els.forEach(function (el) {
       for (var i=0;i<len;i++) {
         var el = els[i];
-	//console.log("Item: " + i);
+        //console.log("Item: " + i);
         el.addEventListener('click', docIndex.onDocClick); // [, options]
       } // );
     }
@@ -464,8 +345,10 @@ docIndex.prototype.initdocs = function(data) {
     // Accordion Options and Instantiation
     // Add: "header": "h4",
     var aopts = this.aopts || {autoHeight: false, navigation: true, collapsible: true, heightStyle: "content"};
-    if (!$) { console.error("JQuery missing, not able to create Accordion."); return; }
+    
     if (this.acc) {
+      // Moved inside this.acc condition (esp. because of return !)
+      if (!$) { console.error("JQuery missing, not able to create Accordion."); return; }
       $("#sidebar").accordion(aopts);
     }
     // Optional autoload of default docIndex.onDocClick (https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events)
@@ -475,8 +358,14 @@ docIndex.prototype.initdocs = function(data) {
       
       var el = $("[href='"+defdocnode.urlpath+"']").get(0);
       if (el) {
+        // NOTE: Triggering this event (displaying for default doc on same page)
+        // on Safari (12.1.1 (13607.2.6.1.2)) causes a unintended navigation (from SPA app URL) to URL of doc
+        // (showing doc as sole content). This seems to be timing related and does not recur when
+        // clicking the hyperlink. TODO: Try delaying event trigger by setTimeout().
+        // We could just load the doc into configured docarea instead of triggering click (click == the easy away),
+        // but most valuable reusable onDocLoad is within onDocClick
         var event = new Event('click');
-	el.dispatchEvent(event);
+        el.dispatchEvent(event);
       }
     }
   };
@@ -488,4 +377,39 @@ docIndex.prototype.docitem = function (did) {
   if (!Array.isArray(this.docs)) { console.error("docs not in Array (for find())"); return undefined; }
   
   return this.docs.find(function (doc) { return doc.id == did; });
+};
+/** Fetch file by http (GET) with 0-Dependencies (with Browser built-in XHR).
+* Auto-Parses JSON content to data structure, leaves anything else as-is to be processed by cb.
+* @param url {string} - URL string
+* @param cb {function} - Callback to call with result content (as only param)
+* @todo Refine callback to recieve: `(err, data)` instead of `(data)`, except JQuery 
+*/
+docIndex.htget = function (url, cb) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  //xhr.setRequestheader(name, val); // No special headers ?
+  var onrsc = function () {
+    var rs = xhr.readyState;
+    // docIndex.debug && console.log("XHR rs("+url+"): " + rs);
+    // Every request should go through state 4
+    if (rs == 4) {
+      console.log("XHR:", xhr);
+      var ct = xhr.getResponseHeader("Content-Type");
+      // Completion-only status analysis
+      if (xhr.status == 200) {
+        // try {
+        // var data;
+        if (ct.match(/\bjson\b/)) { cb(JSON.parse(xhr.responseText)); }
+        else { cb(xhr.responseText); } // ,null
+        //} catch(ex) { cb("Could not Parse JSON", null); }
+        
+      }
+      // Any non-200 status is not okay.
+      else { cb(null); }
+      // else { cb("Error: Non-200 Status:"+xhr.status, null); }
+    }
+    
+  };
+  xhr.onreadystatechange = onrsc;
+  xhr.send(); // No body on GET
 };
