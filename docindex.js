@@ -241,7 +241,7 @@ docIndex.onDocClick = function (ev) {
      ////////////////////// Display /////////////////////////
      //$('#doccontent').html(ht); // OLD, JQ-coupled
      document.getElementById(cfg.docareaid).innerHTML = ht; // OLD: 'doccontent'
-     if ($) {
+     if (window.$) {
        if (!docIndex.nosidebarhide) {  $('#'+cfg.doclistid).fadeOut(); }// .hide() // "#sidebar"
        $('#'+cfg.docareaid).fadeIn(); // .show() // '#doccontent'
      }
