@@ -240,11 +240,14 @@ docIndex.onDocClick = function (ev) {
      if (htdebug) { console.log("HTML from "+url_f+" after link-conversion:\n"+ht); }
      ////////////////////// Display /////////////////////////
      //$('#doccontent').html(ht); // OLD, JQ-coupled
-     document.getElementById(cfg.docareaid).innerHTML = ht; // OLD: 'doccontent'
+     var dael = document.getElementById(cfg.docareaid); // OLD: 'doccontent'
+     if (!dael) { return alert("No document area element found !"); }
+     dael.innerHTML = ht;
      if (window.$) {
        if (!docIndex.nosidebarhide) {  $('#'+cfg.doclistid).fadeOut(); }// .hide() // "#sidebar"
        $('#'+cfg.docareaid).fadeIn(); // .show() // '#doccontent'
      }
+     else { dael.style.display = "block"; }
      return false;
   }
   // TODO: Move callback to .done()
