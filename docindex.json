@@ -1,0 +1,44 @@
+{
+  "title" : "Demo / Example Docindex",
+  "defdoc": "README.md",
+  "defdocX": 0,
+  "debug": 0,
+  "groups": {
+    "advuse": "Usage Beyond Demo",
+    "basic": "Basic Usage"
+  },
+  "docs" : [
+    {
+      "title" : "DocIndex README.md",
+      "urlpath" : "README.md",
+      "type" : "md",
+      "grp": "basic"
+    },
+    {
+      "title" : "DocIndex TODO.md",
+      "urlpath" : "TODO.md",
+      "type" : "md"
+    },
+    {
+      "title" : "Changes to DocIndex",
+      "urlpath" : "CHANGES.md",
+      "type" : "md"
+    },
+    {
+      "title" : "DocIndex HTML Support",
+      "urlpath" : "demodoc/htmlsupport.html",
+      "type" : "html"
+    },
+    {
+      "title" : "Non-existing Document",
+      "urlpath" : "demodoc/nosuchdoc.html",
+      "type" : "html"
+    },
+    {
+      "title" : "Configuring under Apache and NginX",
+      "urlpath" : "README.webservers.md",
+      "type" : "md",
+      "grp": "advuse"
+    }
+  ]
+}
