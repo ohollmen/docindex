@@ -9,7 +9,7 @@
   "main": "docindex.js",
   "browser": "docindex.js",
   "dependencies": {
-    "bootstrap": "~3.3.5",
+    "bootstrap": "~3.4.1",
     "jquery": "~2.1.4",
     "showdown": "~1.2.2"
   },
