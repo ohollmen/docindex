@@ -36,10 +36,13 @@ Listen 8088
   #</Directory>
 </VirtualHost>
 ```
-# Setting DocIndex up under NGinX
+# Setting DocIndex up under NginX
+
+Create a new "server" block in NginX config. In debian configs are laid out in "sites-available" and "sites-enabled" directories.
+Try saving following as "markdown" in "/etc/nginx/sites-available" (and symlink to the file from sibling directory "sites-enabled"):
 
 ```
-# 
+# Define a new Nginx virtualhost ("server")
 server {
   listen 8088;
   root /home/mrsmith/docindex;
