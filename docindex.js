@@ -24,6 +24,10 @@ python3 -m http.server
 * ## TODO
 * - Add server side component and search (content or title)
 * - In-mem db (server OR client)
+* ## Listing essential files of docindex:
+* ```
+* ls -al docindex.css docindex.html docindex.js docindex_main.js package.json
+* ```
 */
 
 
@@ -139,17 +143,18 @@ docIndex.gendoclist = function (docarr) {
   return(cont);
 };
 /** Convert Docindex to grouped list suitable for (JQuery UI) Accordion.
-*
+* Note: While grouped doclist is (HTML structrally) "ready for accordion", the accordion
+* is not iposed or tightly copled here.
 * Automatically detects whether docindex has groups or not, and does the
 * "right thing".
 * @param data {object} Document Index Declaration Object
-* @return HTML Content for a doc navigation area
+* @return HTML string content for a doc navigation area
 */
 docIndex.gendoclist_grp = function (data) {
   // Create groups
   var groupnames = data.groups; // {}
   if (!data.docs) { return alert("No Docs section in JSON"); }
-  if (!Array.isArray(data.docs)) { return alert("Docs section not in Array");}
+  if (!Array.isArray(data.docs)) { return alert("Docs section ('docs') not in Array");}
   // NEW: Generate link id:s
   var id = 1;
   data.docs.forEach(function (doc) { doc.id = id; id++; });
@@ -166,7 +171,7 @@ docIndex.gendoclist_grp = function (data) {
   grpkeys.forEach(function (gk) {
     cont += "<h3>" + (groupnames[gk] || gk) + "</h3>\n\n";
     cont += "<div>\n"; // For Accordion
-    cont += docIndex.gendoclist(grps[gk]);
+    cont += docIndex.gendoclist(grps[gk]); // Docs-in-a--group
     cont += "</div>\n"; // For Accordion
   });
   return(cont);
@@ -264,7 +269,7 @@ docIndex.onDocClick = function (ev) {
 * @param ev {object} Click Event on "Back to Index" link.
 */
 docIndex.onIndexClick = function (ev) {
-  if (!$) { return false; }
+  if (!window.$) { return false; }
   if (!docIndex.nosidebarhide) { $('#sidebar').fadeIn(); } // Not neded as we hardly click on doc "back to index" ?
   $('#doccontent').fadeOut();
   return false;
@@ -373,7 +378,9 @@ docIndex.prototype.initdocs = function(data) {
     }
   };
 /** Get Document item by it's id.
-* Id's are assigned 
+* Id's are assigned at *runtime* docindex initialization.
+* @param id {number} - Internally assigned Integer id for document
+* @return Return docucument information as object.
 */
 docIndex.prototype.docitem = function (did) {
   if (!this.docs) { console.error("No docs member to find from"); return undefined; }
@@ -385,12 +392,13 @@ docIndex.prototype.docitem = function (did) {
 * Auto-Parses JSON content to data structure, leaves anything else as-is to be processed by cb.
 * @param url {string} - URL string
 * @param cb {function} - Callback to call with result content (as only param)
-* @todo Refine callback to recieve: `(err, data)` instead of `(data)`, except JQuery 
+* @todo Refine callback to recieve: `(err, data)` instead of `(data)`, except corrsponding JQuery signature is `(data)` (1st, only param)
 */
 docIndex.htget = function (url, cb) {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', url);
-  //xhr.setRequestheader(name, val); // No special headers ?
+  //function sethdr(hdrs) { Object.keys(hdrs).forEach( (k) => { xhr.setRequestheader(k, hdrs[k]); }); } 
+  //if (opts.headers) {xhr.setRequestheader(name, val); // No special headers ?
   var onrsc = function () {
     var rs = xhr.readyState;
     // docIndex.debug && console.log("XHR rs("+url+"): " + rs);
