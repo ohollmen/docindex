@@ -5,7 +5,8 @@
   "debug": 0,
   "groups": {
     "advuse": "Usage Beyond Demo",
-    "basic": "Basic Usage"
+    "basic": "Basic Usage",
+    "misc": "Miscellaneous"
   },
   "docs" : [
     {
@@ -15,24 +16,28 @@
       "grp": "basic"
     },
     {
-      "title" : "DocIndex TODO.md",
+      "title" : "Planned / TODO / Backlog",
       "urlpath" : "TODO.md",
-      "type" : "md"
+      "type" : "md",
+      "grp": "misc"
     },
     {
-      "title" : "Changes to DocIndex",
+      "title" : "Changes Log",
       "urlpath" : "CHANGES.md",
-      "type" : "md"
+      "type" : "md",
+      "grp": "misc"
     },
     {
-      "title" : "DocIndex HTML Support",
+      "title" : "HTML Support",
       "urlpath" : "demodoc/htmlsupport.html",
-      "type" : "html"
+      "type" : "html",
+      "grp": "misc"
     },
     {
       "title" : "Non-existing Document",
       "urlpath" : "demodoc/nosuchdoc.html",
-      "type" : "html"
+      "type" : "html",
+      "grp": "misc"
     },
     {
       "title" : "Configuring under Apache and NginX",
