@@ -395,11 +395,33 @@ docIndex.prototype.docitem = function (did) {
 * @todo Refine callback to recieve: `(err, data)` instead of `(data)`, except corrsponding JQuery signature is `(data)` (1st, only param)
 */
 docIndex.htget = function (url, cb) {
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', url);
+  // fetch w. await: https://nodejs.org/en/learn/getting-started/fetch
+  if (docIndex.htc && (docIndex.htc == 'fetch')) {
+    let prom = fetch(url); // {method: '', headers: {}, body: ''}
+    prom.then( (resp) => {
+      // Actually throw here to get to catch()
+      if (!resp.ok) { throw `Problems fetch()ing ${url}, status ${resp.status}`; }
+      
+      return resp.text(); // NOT: .json(); Also .blob() for e.g. PDF
+    }).then( (data) => {
+      return cb(data); // Use same "protocol" as AJAX
+    }).catch( (ex) => {
+      console.error(`fetch() exception during call to ${url}: ${ex}`);
+      return cb(null);
+    });
+    //let data = await response.json();
+    return;
+  }
+  // Old school AJAX - old, but dependecy-free.
   //function sethdr(hdrs) { Object.keys(hdrs).forEach( (k) => { xhr.setRequestheader(k, hdrs[k]); }); } 
   //if (opts.headers) {xhr.setRequestheader(name, val); // No special headers ?
-  var onrsc = function () {
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  //xhr.setRequestheader(name, val); // No special headers ?
+  xhr.onreadystatechange = onrsc;
+  xhr.send(); // No body on GET
+  function onrsc() {
     var rs = xhr.readyState;
     // docIndex.debug && console.log("XHR rs("+url+"): " + rs);
     // Every request should go through state 4
@@ -421,6 +443,4 @@ docIndex.htget = function (url, cb) {
     }
     
   };
-  xhr.onreadystatechange = onrsc;
-  xhr.send(); // No body on GET
 };
