@@ -44,6 +44,12 @@
       "urlpath" : "README.webservers.md",
       "type" : "md",
       "grp": "advuse"
+    },
+    {
+      "title" : "Technical Design and Development",
+      "urlpath" : "README.techdesign.md",
+      "type" : "md",
+      "grp": "advuse"
     }
   ]
 }
