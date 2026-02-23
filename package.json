@@ -9,18 +9,24 @@
   "main": "docindex.js",
   "browser": "docindex.js",
   "dependencies": {
-    "bootstrap": "~3.3.5",
-    "jquery": "~2.1.4",
-    "showdown": "~1.2.2"
+    "bootstrap": "~3.3.7",
+    "jquery": "~3.7.1",
+    "showdown": "~2.1.0"
   },
   "optionalDependencies": {
-    "jquery-ui": "~1.12.1"
+    "async": "3.2.0",
+    "body-parser": "1.19.0",
+    "express": "4.17.1",
+    "express-session": "1.17.1",
+    "jquery-ui": "~1.12.1",
+    "md5-file": "^5.0.0"
   },
   "devDependencies": {
     "jsdoc": "3.6.3"
   },
   "scripts": {
-    "jsdoc":"jsdoc *.js -R README.md -c jsdoc.conf.json"
+    "jsdoc": "jsdoc *.js -R README.md -c jsdoc.conf.json",
+    "copyscratch": "export DI_PATH=/tmp/docindex_`date '+%s'`; mkdir $DI_PATH; rsync -av --exclude .git ./ $DI_PATH; echo \"Copied to $DI_PATH\""
   },
   "keywords": [
     "doc",
