@@ -355,8 +355,8 @@ docIndex.prototype.initdocs = function(data) {
     var aopts = this.aopts || {autoHeight: false, navigation: true, collapsible: true, heightStyle: "content"};
     
     if (this.acc) {
-      // Moved inside this.acc condition (esp. because of return !)
-      if (!$) { console.error("JQuery missing, not able to create Accordion."); return; }
+      // Moved inside this.acc condition (esp. because of return !). Use window.$, not $
+      if (!window.$) { console.error("JQuery missing, not able to create Accordion."); return; }
       $("#sidebar").accordion(aopts);
     }
     // Optional autoload of default docIndex.onDocClick (https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events)
@@ -364,7 +364,9 @@ docIndex.prototype.initdocs = function(data) {
     // 
     if (defdocnode) {
       
-      var el = $("[href='"+defdocnode.urlpath+"']").get(0);
+      //var el = $("[href='"+defdocnode.urlpath+"']").get(0);
+      // Do not depend on JQ here !
+      var el = document.querySelector("[href='"+defdocnode.urlpath+"']");
       if (el) {
         // NOTE: Triggering this event (displaying for default doc on same page)
         // on Safari (12.1.1 (13607.2.6.1.2)) causes a unintended navigation (from SPA app URL) to URL of doc
