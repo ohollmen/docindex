@@ -213,18 +213,19 @@ docIndex.onDocClick = function (ev) {
      // TODO: Preprocess URL:s to avoid '_' in URL:s to become emphasis (<em>)
      // This will be somewhat tricky. For now - live with it.
      // Convert MD->HTML
-     var ht; var htdebug = 1;
+     var ht;
+     var htdebug = 0; // docIndex.docdebug;
      if (url_f.match(/\.html$/)) { ht = data; } // Simple HTML support (No conversion)
      // TODO: more checks here to support more diverse content (pdf ? svg ?)
      else {
        ht = docIndex.converter.makeHtml(data);
-       cfg.debug && console.log("Converted: " + data.length +" B (MD) to "+ht.length+" B (HTML)");
+       cfg.debug && console.log(`Converted: ${data.length} B (MD) to ${ht.length} B (HTML)`);
      }
      // cfg.debug > 1
-     if (htdebug) { console.log("HTML from "+url_f+" before link-conversion:\n"+ht); }
+     if (htdebug) { console.log(`HTML from ${url_f} before link-conversion:\n${ht}`); }
      ////////////////// Link Conversion "Heuristics" /////////////////////
      // Additionally convert links by current policy ... (none, post, auto)
-     cfg.debug && console.log("Convert links by policy: "+cfg.linkproc);
+     cfg.debug && console.log(`Convert links by policy: ${cfg.linkproc}`);
      //var lp = cfg.linkproc;
      if (cfg.linkproc == "none") {}
      // Removed "\<" escapes as "unnecessary" (jshint: Unexpected escaped character '<' in regular expression.)
@@ -242,7 +243,7 @@ docIndex.onDocClick = function (ev) {
        ht = ht.replace(/[^"](\bhttps?:\/\/[^\s<>]+)/g, " <a target=\"other\" href=\"$1\" title=\"$1\">$1<\/a>");
      }
      if (docIndex.ondocchange && (typeof docIndex.ondocchange == 'function')) { docIndex.ondocchange(url_f); }
-     if (htdebug) { console.log("HTML from "+url_f+" after link-conversion:\n"+ht); }
+     if (htdebug) { console.log(`HTML from ${url_f} after link-conversion (htdebug: ${htdebug}):\n${ht}`); }
      ////////////////////// Display /////////////////////////
      //$('#doccontent').html(ht); // OLD, JQ-coupled
      var dael = document.getElementById(cfg.docareaid); // OLD: 'doccontent'
@@ -330,7 +331,7 @@ docIndex.prototype.initdocs = function(data) {
       document.getElementById('sidebar').innerHTML = cont;
       // Click on doclink
       //$('.dlink').click(docIndex.onDocClick);
-      var els = document.getElementsByClassName('dlink');
+      var els = document.getElementsByClassName('dlink'); // .querySelector() ?
       // console.log(els);
       
       var len = els.length;
@@ -401,8 +402,8 @@ docIndex.htget = function (url, cb) {
   if (docIndex.htc && (docIndex.htc == 'fetch')) {
     let prom = fetch(url); // {method: '', headers: {}, body: ''}
     prom.then( (resp) => {
-      // Actually throw here to get to catch()
-      if (!resp.ok) { throw `Problems fetch()ing ${url}, status ${resp.status}`; }
+      // Actually throw here to get to catch(). Any non-2XX reponse is ! ok
+      if (!resp.ok) { throw `Problems fetch()ing ${url}, HTTP status: ${resp.status}`; }
       
       return resp.text(); // NOT: .json(); Also .blob() for e.g. PDF
     }).then( (data) => {
@@ -411,7 +412,7 @@ docIndex.htget = function (url, cb) {
       console.error(`fetch() exception during call to ${url}: ${ex}`);
       return cb(null);
     });
-    //let data = await response.json();
+    //let data = await response.json(); // if this fn was async itself
     return;
   }
   // Old school AJAX - old, but dependecy-free.
@@ -423,7 +424,7 @@ docIndex.htget = function (url, cb) {
   //xhr.setRequestheader(name, val); // No special headers ?
   xhr.onreadystatechange = onrsc;
   xhr.send(); // No body on GET
-  function onrsc() {
+  function onrsc() { // on ready-state-change
     var rs = xhr.readyState;
     // docIndex.debug && console.log("XHR rs("+url+"): " + rs);
     // Every request should go through state 4
